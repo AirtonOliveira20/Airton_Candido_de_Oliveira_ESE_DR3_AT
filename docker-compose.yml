@@ -44,7 +44,14 @@ services:
       # produtos-service-docker.properties (sobrescreve a URL do Eureka)
       - SPRING_PROFILES_ACTIVE=docker
       # troca "localhost" por "eureka-server", idem
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE nao funciona: serviceUrl e um Map e a env var
+      # vira a chave minuscula "defaultzone" -> o servico caia no localhost:8761.
+      # SPRING_APPLICATION_JSON preserva o case de "defaultZone".
+      - 'SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://eureka-server:8761/eureka/"}}}}'
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      # porta explicita: se o config-server ainda nao estiver pronto, o import e
+      # "optional:" e o servico subiria na 8080 padrao
+      - SERVER_PORT=8081
     ports:
       - "8081:8081"
     networks:
@@ -62,7 +69,14 @@ services:
       # ativa o profile "docker", que faz o config-server servir também
       # vendas-service-docker.properties (sobrescreve a URL do Eureka)
       - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE nao funciona: serviceUrl e um Map e a env var
+      # vira a chave minuscula "defaultzone" -> o servico caia no localhost:8761.
+      # SPRING_APPLICATION_JSON preserva o case de "defaultZone".
+      - 'SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://eureka-server:8761/eureka/"}}}}'
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      # porta explicita: se o config-server ainda nao estiver pronto, o import e
+      # "optional:" e o servico subiria na 8080 padrao
+      - SERVER_PORT=8082
     ports:
       - "8082:8082"
     networks:
@@ -79,7 +93,14 @@ services:
       # ativa o profile "docker", que faz o config-server servir também
       # vendas-service-docker.properties (sobrescreve a URL do Eureka)
       - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE nao funciona: serviceUrl e um Map e a env var
+      # vira a chave minuscula "defaultzone" -> o servico caia no localhost:8761.
+      # SPRING_APPLICATION_JSON preserva o case de "defaultZone".
+      - 'SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://eureka-server:8761/eureka/"}}}}'
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      # porta explicita: se o config-server ainda nao estiver pronto, o import e
+      # "optional:" e o servico subiria na 8080 padrao
+      - SERVER_PORT=8083
     ports:
       - "8083:8083"
     networks:
@@ -97,9 +118,41 @@ services:
       # ativa o profile "docker", que faz o config-server servir também
       # auth-service-docker.properties (sobrescreve a URL do Eureka)
       - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE nao funciona: serviceUrl e um Map e a env var
+      # vira a chave minuscula "defaultzone" -> o servico caia no localhost:8761.
+      # SPRING_APPLICATION_JSON preserva o case de "defaultZone".
+      - 'SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://eureka-server:8761/eureka/"}}}}'
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      # porta explicita: se o config-server ainda nao estiver pronto, o import e
+      # "optional:" e o servico subiria na 8080 padrao
+      - SERVER_PORT=8084
     ports:
       - "8084:8084"
+    networks:
+      - microservicos-net
+
+  # --- Servico de fornecedores ---
+  fornecedores-service:
+    build: ./fornecedores-service
+    container_name: fornecedores-service
+    depends_on:
+      - eureka-server
+      - config-server
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      # ativa o profile "docker", que faz o config-server servir também
+      # fornecedores-service-docker.properties (sobrescreve a URL do Eureka)
+      - SPRING_PROFILES_ACTIVE=docker
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE nao funciona: serviceUrl e um Map e a env var
+      # vira a chave minuscula "defaultzone" -> o servico caia no localhost:8761.
+      # SPRING_APPLICATION_JSON preserva o case de "defaultZone".
+      - 'SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://eureka-server:8761/eureka/"}}}}'
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      # porta explicita: se o config-server ainda nao estiver pronto, o import e
+      # "optional:" e o servico subiria na 8080 padrao
+      - SERVER_PORT=8086
+    ports:
+      - "8086:8086"
     networks:
       - microservicos-net
 
@@ -110,7 +163,11 @@ services:
     depends_on:
       - eureka-server               # gateway só precisa do eureka pra descobrir os serviços
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      # EUREKA_CLIENT_SERVICEURL_DEFAULTZONE nao funciona: serviceUrl e um Map e a env var
+      # vira a chave minuscula "defaultzone" -> o servico caia no localhost:8761.
+      # SPRING_APPLICATION_JSON preserva o case de "defaultZone".
+      - 'SPRING_APPLICATION_JSON={"eureka":{"client":{"serviceUrl":{"defaultZone":"http://eureka-server:8761/eureka/"}}}}'
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
     ports:
       - "8085:8085"
     networks:

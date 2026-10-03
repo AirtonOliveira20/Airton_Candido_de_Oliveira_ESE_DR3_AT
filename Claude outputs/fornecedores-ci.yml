@@ -1,0 +1,36 @@
+# Pipeline de CI do fornecedores-service.
+# A cada push (em qualquer branch), o GitHub sobe uma maquina Ubuntu,
+# baixa o codigo, instala o Java 17 e compila o servico com o Maven.
+name: CI - fornecedores-service
+
+on:
+  push:            # dispara em todo push
+  workflow_dispatch: # permite rodar manualmente pela aba Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Todos os comandos "run" abaixo executam dentro da pasta do servico
+    defaults:
+      run:
+        working-directory: fornecedores-service
+
+    steps:
+      # 1. Baixa o codigo do repositorio para a maquina do pipeline
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      # 2. Instala o Java 17 (Temurin) e guarda em cache o ~/.m2,
+      #    para os proximos builds nao baixarem tudo de novo
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+          cache-dependency-path: fornecedores-service/pom.xml
+
+      # 3. Compila e empacota com o Maven (o runner do GitHub ja vem com Maven)
+      - name: Compilar com Maven
+        run: mvn -B clean package

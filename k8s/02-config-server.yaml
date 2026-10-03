@@ -101,57 +101,57 @@ data:
   vendas-service-docker.properties: |
     eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka/
 ---
-apiVersion: apps/v1            # versão da API do Kubernetes usada aqui
-kind: Deployment                # mantém sempre a quantidade certa de Pods rodando
+apiVersion: apps/v1           
+kind: Deployment               
 metadata:
-  name: config-server            # nome do Deployment
-  namespace: ecommerce       # em qual pasta (Namespace) ele mora
+  name: config-server           
+  namespace: ecommerce      
 spec:
-  replicas: 1                    # quantos Pods manter no ar
+  replicas: 1                   
   selector:
     matchLabels:
-      app: config-server          # diz quais Pods pertencem a este Deployment
-  template:                      # o molde usado pra criar cada Pod
+      app: config-server         
+  template:                      
     metadata:
       labels:
-        app: config-server        # etiqueta do Pod — precisa ser igual à de cima
+        app: config-server       
     spec:
       containers:
-        - name: config-server        # nome do container dentro do Pod
-          image: config-server:1.0        # imagem buildada no Passo 06
-          imagePullPolicy: IfNotPresent   # usa a imagem já carregada — não baixa de fora
+        - name: config-server        
+          image: config-server:1.0       
+          imagePullPolicy: IfNotPresent   
           ports:
-            - containerPort: 8888         # porta que o container escuta
+            - containerPort: 8888        
           env:
-            # backend "native" = le arquivos soltos do filesystem.
-            # NAO use o backend git aqui: o ConfigMap monta .properties numa
-            # pasta comum, sem .git, e o git backend falha com "No .git at ...".
+            
+            
+           
             - name: SPRING_PROFILES_ACTIVE
               value: "native"
             - name: SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
               value: "file:///config-repo"
-          volumeMounts:                        # onde o volume abaixo aparece dentro do container
+          volumeMounts:                      
             - name: config-repo
-              mountPath: /config-repo             # o ConfigMap "vira" arquivos nesta pasta
-          readinessProbe:                 # so fica Ready quando SERVIR config de verdade
-            httpGet:                          # TCP em 8888 responderia mesmo com o backend quebrado
+              mountPath: /config-repo            
+          readinessProbe:                
+            httpGet:                          
               path: /produtos-service/docker
               port: 8888
             initialDelaySeconds: 15
             periodSeconds: 10
-      volumes:                       # declara o volume que o volumeMounts acima usa
-        - name: config-repo            # precisa ter o mesmo nome do volumeMounts
+      volumes:                      
+        - name: config-repo           
           configMap:
-            name: config-repo-files      # arquivos vêm do ConfigMap definido acima
+            name: config-repo-files      
 ---
 apiVersion: v1
-kind: Service                    # cria um endereço fixo, que nunca muda
+kind: Service                    
 metadata:
-  name: config-server              # vira o endereço: http://config-server:8888
+  name: config-server              
   namespace: ecommerce
 spec:
   selector:
-    app: config-server                # envia tráfego pros Pods que tiverem essa etiqueta
+    app: config-server               
   ports:
-    - port: 8888                      # porta do próprio Service
-      targetPort: 8888                 # porta real dentro do Pod, pra onde ele repassa
+    - port: 8888                     
+      targetPort: 8888               
